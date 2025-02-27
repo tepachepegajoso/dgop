@@ -45,15 +45,12 @@ ESTADOS = {
     "MX-ZAC": "ZACATECAS"
 }
 
-# Inicializar Firebase (solo una vez)
+# Inicializar Firebase solo si no está inicializado
 if not firebase_admin._apps:
-    try:
-        firebase_secrets = json.loads(st.secrets["firebase"])
-        cred = credentials.Certificate(firebase_secrets)
-        firebase_admin.initialize_app(cred)
-    except Exception as e:
-        st.error(f"Error al inicializar Firebase: {e}")
-        st.stop()
+    # Convertir st.secrets["firebase"] a un diccionario normal
+    cred_dict = dict(st.secrets["firebase"])  
+    cred = credentials.Certificate(cred_dict)
+    firebase_admin.initialize_app(cred)
 
 # Acceder a Firestore
 db = firestore.client()
