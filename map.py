@@ -172,7 +172,7 @@ def main():
                 save_report(st.session_state.state_progress, report_name)
                 st.sidebar.success(f"Reporte '{report_name}' guardado exitosamente!")
             except Exception as e:
-                st.sidebar.error(f"Error: {e}")
+                st.sidebar.success(f"Error: {e}")
 
         # Mostrar reportes guardados
         st.subheader("Reportes Guardados")
