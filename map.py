@@ -7,6 +7,9 @@ from datetime import datetime
 import firebase_admin
 from firebase_admin import credentials, firestore
 
+# 🔹 Configuración de la página (DEBE SER LO PRIMERO)
+st.set_page_config(page_title="Actividades DGOP", layout="wide")
+
 APP_TITLE = 'Actividades DGOP'
 APP_SUB_TITLE = 'MAPA DE AVANCES'
 
@@ -45,34 +48,31 @@ ESTADOS = {
     "MX-ZAC": "ZACATECAS"
 }
 
-# Extraer los datos de Firebase desde st.secrets y construir un diccionario nativo
+# 🔹 Inicialización de Firebase
 try:
-    firebase_creds = {
-        "type": st.secrets["firebase"]["type"],
-        "project_id": st.secrets["firebase"]["project_id"],
-        "private_key_id": st.secrets["firebase"]["private_key_id"],
-        "private_key": st.secrets["firebase"]["private_key"].replace("\\n", "\n"),
-        "client_email": st.secrets["firebase"]["client_email"],
-        "client_id": st.secrets["firebase"]["client_id"],
-        "auth_uri": st.secrets["firebase"]["auth_uri"],
-        "token_uri": st.secrets["firebase"]["token_uri"],
-        "auth_provider_x509_cert_url": st.secrets["firebase"]["auth_provider_x509_cert_url"]
-    }
+    if not firebase_admin._apps:  # Evita inicializar Firebase más de una vez
+        firebase_creds = {
+            "type": st.secrets["firebase"]["type"],
+            "project_id": st.secrets["firebase"]["project_id"],
+            "private_key_id": st.secrets["firebase"]["private_key_id"],
+            "private_key": st.secrets["firebase"]["private_key"].replace("\\n", "\n"),
+            "client_email": st.secrets["firebase"]["client_email"],
+            "client_id": st.secrets["firebase"]["client_id"],
+            "auth_uri": st.secrets["firebase"]["auth_uri"],
+            "token_uri": st.secrets["firebase"]["token_uri"],
+            "auth_provider_x509_cert_url": st.secrets["firebase"]["auth_provider_x509_cert_url"]
+        }
 
-    # Inicializar Firebase
-    cred = credentials.Certificate(firebase_creds)
-    firebase_admin.initialize_app(cred)
+        cred = credentials.Certificate(firebase_creds)
+        firebase_admin.initialize_app(cred)
+
     db = firestore.client()
-
     st.write("✅ Firebase inicializado correctamente")
 
 except Exception as e:
     st.error(f"❌ Error al inicializar Firebase: {e}")
 
-# Acceder a Firestore
-db = firestore.client()
-
-# Funciones para interactuar con Firestore
+# 🔹 Funciones para interactuar con Firestore
 
 def save_report(state_progress, report_name, user="admin"):
     report_data = {
@@ -96,8 +96,8 @@ def list_reports():
     reports = db.collection("reportes").stream()
     return [report.id for report in reports]
 
+# 🔹 Interfaz de usuario en Streamlit
 def main():
-    st.set_page_config(APP_TITLE, layout="wide")
     st.title(APP_TITLE)
     st.caption(APP_SUB_TITLE)
     
@@ -129,22 +129,22 @@ def main():
         
         if st.sidebar.button("💾 Guardar Cambios"):
             st.session_state.state_progress[selected_state] = new_value
-            st.sidebar.success(f"¡Progreso de {ESTADOS[selected_state]} guardado!")
+            st.sidebar.success(f"¡Progreso de {ESTADOS[selected_state]} guardado! ✅")
         
         report_name = st.sidebar.text_input("Nombre del Reporte", value=f"Reporte_{datetime.now().strftime('%Y-%m-%d_%H-%M')}")
         
         if st.sidebar.button("📄 Guardar Reporte Actual"):
             try:
                 save_report(st.session_state.state_progress, report_name)
-                st.sidebar.success(f"Reporte '{report_name}' guardado exitosamente!")
+                st.sidebar.success(f"✅ Reporte '{report_name}' guardado exitosamente!")
             except Exception as e:
-                st.sidebar.error(f"Error: {e}")
+                st.sidebar.error(f"❌ Error: {e}")
         
-        st.subheader("Reportes Guardados")
+        st.subheader("📂 Reportes Guardados")
         reports = list_reports()
         
         if reports:
-            selected_report = st.selectbox("Selecciona un reporte para ver", options=reports)
+            selected_report = st.selectbox("📜 Selecciona un reporte para ver", options=reports)
             col1, col2 = st.columns(2)
             
             with col1:
@@ -152,17 +152,17 @@ def main():
                     report_data = load_report(selected_report)
                     if report_data:
                         st.session_state.state_progress = report_data["valores_avance"]
-                        st.success(f"Reporte '{selected_report}' cargado exitosamente!")
+                        st.success(f"✅ Reporte '{selected_report}' cargado exitosamente!")
                     else:
-                        st.error("Reporte no encontrado")
+                        st.error("⚠️ Reporte no encontrado")
             
             with col2:
                 if st.button("🗑️ Eliminar Reporte"):
                     delete_report(selected_report)
-                    st.success(f"Reporte '{selected_report}' eliminado exitosamente!")
+                    st.success(f"✅ Reporte '{selected_report}' eliminado exitosamente!")
                     st.experimental_rerun()
         else:
-            st.info("No hay reportes guardados aún")
+            st.info("📭 No hay reportes guardados aún")
         
         fig = px.choropleth_mapbox(
             grouped,
