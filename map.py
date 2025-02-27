@@ -45,23 +45,29 @@ ESTADOS = {
     "MX-ZAC": "ZACATECAS"
 }
 
-# 🔹 Inicialización de Firebase
+# Extraer los datos de Firebase desde st.secrets y construir un diccionario nativo
 try:
-    if not firebase_admin._apps:  # Evita inicializar Firebase más de una vez
-        firebase_creds = {
-            "type": st.secrets["firebase"]["type"],
-            "project_id": st.secrets["firebase"]["project_id"],
-            "private_key_id": st.secrets["firebase"]["private_key_id"],
-            "private_key": st.secrets["firebase"]["private_key"].replace("\\n", "\n"),
-            "client_email": st.secrets["firebase"]["client_email"],
-            "client_id": st.secrets["firebase"]["client_id"],
-            "auth_uri": st.secrets["firebase"]["auth_uri"],
-            "token_uri": st.secrets["firebase"]["token_uri"],
-            "auth_provider_x509_cert_url": st.secrets["firebase"]["auth_provider_x509_cert_url"]
-        }
+    firebase_creds = {
+        "type": st.secrets["firebase"]["type"],
+        "project_id": st.secrets["firebase"]["project_id"],
+        "private_key_id": st.secrets["firebase"]["private_key_id"],
+        "private_key": st.secrets["firebase"]["private_key"].replace("\\n", "\n"),
+        "client_email": st.secrets["firebase"]["client_email"],
+        "client_id": st.secrets["firebase"]["client_id"],
+        "auth_uri": st.secrets["firebase"]["auth_uri"],
+        "token_uri": st.secrets["firebase"]["token_uri"],
+        "auth_provider_x509_cert_url": st.secrets["firebase"]["auth_provider_x509_cert_url"]
+    }
 
-        cred = credentials.Certificate(firebase_creds)
-        firebase_admin.initialize_app(cred)
+    # Inicializar Firebase
+    cred = credentials.Certificate(firebase_creds)
+    firebase_admin.initialize_app(cred)
+    db = firestore.client()
+
+    st.write("✅ Firebase inicializado correctamente")
+
+except Exception as e:
+    st.error(f"❌ Error al inicializar Firebase: {e}")
 
 # Acceder a Firestore
 db = firestore.client()
