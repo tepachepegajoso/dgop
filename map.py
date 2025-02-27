@@ -6,6 +6,7 @@ from streamlit_option_menu import option_menu
 from datetime import datetime
 import firebase_admin
 from firebase_admin import credentials, firestore
+import os
 
 APP_TITLE = 'Actividades DGOP'
 APP_SUB_TITLE = 'MAPA DE AVANCES'
@@ -47,10 +48,20 @@ ESTADOS = {
 
 # Inicializar Firebase (solo una vez)
 if not firebase_admin._apps:
-    # Ruta al archivo JSON de credenciales
-    cred_path = "dgop-ad814-firebase-adminsdk-fbsvc-6f2ef93010.json"
-    cred = credentials.Certificate(cred_path)
-    firebase_admin.initialize_app(cred)
+    try:
+        # Ruta al archivo JSON de credenciales
+        cred_path = "dgop-ad814-firebase-adminsdk-fbsvc-6f2ef93010.json"
+        
+        # Verificar si el archivo existe
+        if not os.path.exists(cred_path):
+            st.error(f"El archivo de credenciales '{cred_path}' no existe.")
+            st.stop()  # Detener la ejecución si el archivo no existe
+        
+        cred = credentials.Certificate(cred_path)
+        firebase_admin.initialize_app(cred)
+    except Exception as e:
+        st.error(f"Error al inicializar Firebase: {e}")
+        st.stop()  # Detener la ejecución si hay un error
 
 # Acceder a Firestore
 db = firestore.client()
