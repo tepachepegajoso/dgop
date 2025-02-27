@@ -45,13 +45,15 @@ ESTADOS = {
     "MX-ZAC": "ZACATECAS"
 }
 
-if not firebase_admin._apps:
-    try:
-        firebase_creds = json.loads(st.secrets["firebase"])
-        cred = credentials.Certificate(firebase_creds)
-        firebase_admin.initialize_app(cred)
-    except Exception as e:
-        st.error(f"Error al inicializar Firebase: {e}")
+# Cargar y convertir las credenciales a JSON válido
+try:
+    firebase_creds = json.loads(json.dumps(st.secrets["firebase"]))  # Convierte AttrDict a str y luego a JSON
+    cred = credentials.Certificate(firebase_creds)
+    firebase_admin.initialize_app(cred)
+    db = firestore.client()
+    st.write("✅ Firebase inicializado correctamente")
+except Exception as e:
+    st.error(f"❌ Error al inicializar Firebase: {e}")
 
 # Acceder a Firestore
 db = firestore.client()
