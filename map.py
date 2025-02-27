@@ -185,7 +185,7 @@ def main():
                         # Actualizar la lista de reportes después de eliminar
                         st.experimental_rerun()  # Recargar la aplicación para actualizar la lista
                     else:
-                        st.success("Reporte eliminado exitosamente!")
+                        st.error("No se pudo eliminar el reporte.")
         else:
             st.info("No hay reportes guardados aún")
 
